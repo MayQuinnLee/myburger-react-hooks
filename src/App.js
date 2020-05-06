@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, Suspense} from 'react';
 import {Route, Switch, Redirect} from 'react-router-dom';
 import {connect} from 'react-redux';
 
@@ -7,17 +7,17 @@ import BurgerBuilder from './containers/BurgerBuilder/BurgerBuilder';
 
 import Logout from './containers/Logout/Logout';
 import * as actions from './store/actions/index';
-import asyncComponent from './hoc/asyncComponent/asyncComponent';
+import { render } from 'enzyme';
 
-const asyncCheckout = asyncComponent ( () => {
+const Checkout = React.lazy( () => {
   return import('./containers/Checkout/Checkout')
 });
 
-const asyncOrders = asyncComponent ( () => {
+const Orders = React.lazy( () => {
   return import('./containers/Orders/Orders')
 });
 
-const asyncAuth = asyncComponent ( () => {
+const Auth = React.lazy( () => {
   return import('./containers/Auth/Auth')
 });
 //lazy loading chuck1,2,3 . only load when required
@@ -25,11 +25,12 @@ const asyncAuth = asyncComponent ( () => {
 const App = props => {
     useEffect(() => {
       props.onTryAutoSignIn();
-    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[]); //it should only run on the first render cycle
 
     let route = (
       <Switch>
-        <Route path="/auth" component={asyncAuth} />
+        <Route path="/auth" render={() => <Auth />}/>
         <Route path="/" component={BurgerBuilder} />
         <Redirect to='/' />
       </Switch>
@@ -38,10 +39,10 @@ const App = props => {
     if(props.isAuthenticated){
       route = (
         <Switch>
-          <Route path="/checkout" component={asyncCheckout} />
-          <Route path="/orders" component={asyncOrders} />
+          <Route path="/checkout" render={(props) => <Checkout {...props}/>} />
+          <Route path="/orders" render={(props) => <Orders {...props}/>} />
           <Route path="/logout" component={Logout} />
-          <Route path="/auth" component={asyncAuth} />
+          <Route path="/auth" render={(props) => <Auth {...props}/>} />
           <Route path="/" component={BurgerBuilder} />
           <Redirect to='/' />
         </Switch>
@@ -51,7 +52,7 @@ const App = props => {
     return (
       <div>
         <Layout>
-          {route}
+          <Suspense fallback={<p>Loading...</p>}>{route}</Suspense>
         </Layout>
       </div>
     );

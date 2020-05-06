@@ -1,54 +1,47 @@
-import React, {Component} from 'react';
-import Aux from '../../hoc/Aux/Aux'
+import React, {useState, useEffect} from 'react';
 import Modal from '../../components/UI/Modal/Modal';
 
 const withErrorHandler = (WrappedComponent, axios) => { 
     //we expect to receive 2 arguments = burgerbuilder & axios
-    return class extends Component {
-        state = {
-            error: null,
-        }
+    return props => {
+        const [error, setError] = useState(null);
 
-        //Based on LifeCycleHook, componentDidMount will only work when all the children (WrappedComponent) has been rendered, when an error occur before children could be render, this hook below will not work
-        componentWillMount () {
-            this.reqInterceptor = axios.interceptors.request.use(req => {
-                this.setState({error: null});
-                return req;
-                //when sending request, we have to return the request so that the request can continue
-            }) //not concern on the request, but want to clear the error
-            this.resInterceptor = axios.interceptors.response.use(
-              res => res,
-              error => {
-                this.setState({ error: error });
-              }
-            );
-        }
+        //cannot use useEffect() because we want to render this before JSX
+        const reqInterceptor = axios.interceptors.request.use(req => {
+            setError(null);
+            return req;
+            //when sending request, we have to return the request so that the request can continue
+        }); //not concern on the request, but want to clear the error
+        const resInterceptor = axios.interceptors.response.use(
+            res => res,
+            error => {
+            setError(error)
+            }
+        );
+            
+        useEffect(() => {    //when using return we can cleanup       
+            return () => {
+                axios.interceptors.request.eject(reqInterceptor);
+                axios.interceptors.response.eject(resInterceptor);
+            };
+        },[reqInterceptor, resInterceptor]);
+        
+        const errorConfirmedHandler = () => {
+            setError(null)
+        };
 
-        componentWillUnmount () {
-            axios.interceptors.request.eject(this.reqInterceptor);
-            axios.interceptors.response.eject(this.resInterceptor);
-        }
-        //preventing memory leaks
-
-        errorConfirmedHandler =() =>{
-            this.setState({error:null})
-        }
-
-        render () {
-            return (
-                <Aux> 
-                    <Modal 
-                    show={this.state.error}
-                    modalClosed={this.errorConfirmedHandler}>
-                        {this.state.error ? this.state.error.message : null} 
-                        {/*message property return by Firebase*/}
-                    </Modal>
-                    <WrappedComponent {...this.props} />
-                </Aux>
-            )
-        }
-
-    }
-}
+        return (
+            <React.Fragment> 
+                <Modal 
+                show={error}
+                modalClosed={errorConfirmedHandler}>
+                    {error ? error.message : null} 
+                    {/*message property return by Firebase*/}
+                </Modal>
+                <WrappedComponent {...props} />
+            </React.Fragment>
+        );
+    };
+};
 
 export default withErrorHandler;

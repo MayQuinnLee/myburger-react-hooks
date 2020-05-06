@@ -9,52 +9,55 @@ import * as actions from '../../store/actions/index';
 import Spinner from '../../components/UI/Spinner/Spinner';
 import {updateObject, checkValidity} from '../../shared/utility';
 
-class Auth extends Component {
-    state = {
-        controls : {
-            email: {
-                elementType: 'input',
-                elementConfig: {
-                    type: 'email',
-                    placeholder: 'Mail Address'
-                },
-                value: '',
-                validation: {
-                    required: true,
-                    isEmail: true,
-                },
-                valid: false,
-                touched: false
+const Auth = props => {
+    const [emailState, setEmailState] = useState({            
+        email: {
+            elementType: 'input',
+            elementConfig: {
+                type: 'email',
+                placeholder: 'Mail Address'
             },
-            password: {
-                elementType: 'input',
-                elementConfig: {
-                    type: 'password',
-                    placeholder: 'Password'
-                },
-                value: '',
-                validation: {
-                    required: true,
-                    minLength: 6,
-                },
-                valid: false,
-                touched: false
+            value: '',
+            validation: {
+                required: true,
+                isEmail: true,
             },
-        },
-        isSignup: true,
-    };
-
-    componentDidMount(){
-        //if we are not building a burger and we are not at homepage, then redirect to homepage
-        if(!this.props.buildingBurger && this.props.authRedirectPath!=='/'){
-            this.props.onSetAuthRedirectPath();
+            valid: false,
+            touched: false
         }
-    }
-    switchAuthModeHandler = () => {
-        this.setState(prevState => {
-            return {isSignup: !prevState.isSignup}
-        })
-    };
+    });
+
+    const [passwordState, setPasswordState] = useState({
+        password: {
+            elementType: 'input',
+            elementConfig: {
+                type: 'password',
+                placeholder: 'Password'
+            },
+            value: '',
+            validation: {
+                required: true,
+                minLength: 6,
+            },
+            valid: false,
+            touched: false
+        },
+    });
+
+    const [isSignup, setIsSignUp] = useState(true);
+
+    useEffect(() => {
+        if(!props.buildingBurger && props.authRedirectPath!=='/'){ props.onSetAuthRedirectPath() }
+    },[props.buildingBurger, props.authRedirectPath]);
+    //if we are not building a burger and we are not at homepage, then redirect to homepage
+    
+    const switchAuthModeHandler = useCallback(() => {
+        setIsSignUp(!isSignup)
+    },[isSignup]);
+
+};
+
+
 
     inputChangedHandler = (event, controlName) => {
         const updatedControls = updateObject(this.state.controls, {
