@@ -1,11 +1,10 @@
 import React from 'react';
 
 import classes from './Modal.module.css';
-import Aux from '../../../hoc/Aux/Aux';
 import Backdrop from '../Backdrop/Backdrop';
 
-const modal = ( props ) => (
-    <Aux>
+const modal = props => ( 
+    <React.Fragment>
         <Backdrop show={props.show} clicked={props.modalClosed} />
         <div
             className={classes.Modal}
@@ -15,7 +14,13 @@ const modal = ( props ) => (
             }}>
             {props.children}
         </div>
-    </Aux>
+    </React.Fragment>
 );
 
-export default modal;
+export default React.memo(
+    modal, 
+    (prevProps, nextProps) => 
+        nextProps.show === prevProps.show &&
+        nextProps.children === prevProps.children
+);
+//optimize performance, only update this when props in this component changes

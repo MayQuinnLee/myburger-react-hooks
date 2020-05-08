@@ -1,40 +1,19 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import Modal from '../../components/UI/Modal/Modal';
+import useHttpErrorHandler from '../../hooks/http-Error-Handler';
 
 const withErrorHandler = (WrappedComponent, axios) => { 
-    //we expect to receive 2 arguments = burgerbuilder & axios
+    //we expect to receive 2 arguments = burgerBuilder & axios
     return props => {
-        const [error, setError] = useState(null);
-
-        //cannot use useEffect() because we want to render this before JSX
-        const reqInterceptor = axios.interceptors.request.use(req => {
-            setError(null);
-            return req;
-            //when sending request, we have to return the request so that the request can continue
-        }); //not concern on the request, but want to clear the error
-        const resInterceptor = axios.interceptors.response.use(
-            res => res,
-            error => {
-            setError(error)
-            }
-        );
-            
-        useEffect(() => {    //when using return we can cleanup       
-            return () => {
-                axios.interceptors.request.eject(reqInterceptor);
-                axios.interceptors.response.eject(resInterceptor);
-            };
-        },[reqInterceptor, resInterceptor]);
-        
-        const errorConfirmedHandler = () => {
-            setError(null)
-        };
-
+        const [error, clearError] = useHttpErrorHandler(axios); 
+        //array destructuring coincidentally look like useState, can return anything from custom hooks
+        //axios: the hook expect to receive 'httpClient'
+        //we can use the hook in other component, extract the 'error' data and do whatever we want, over here we are just showing a error modal
         return (
             <React.Fragment> 
                 <Modal 
                 show={error}
-                modalClosed={errorConfirmedHandler}>
+                modalClosed={clearError}>
                     {error ? error.message : null} 
                     {/*message property return by Firebase*/}
                 </Modal>

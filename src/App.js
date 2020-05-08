@@ -7,7 +7,7 @@ import BurgerBuilder from './containers/BurgerBuilder/BurgerBuilder';
 
 import Logout from './containers/Logout/Logout';
 import * as actions from './store/actions/index';
-import { render } from 'enzyme';
+// import { render } from 'enzyme';
 
 const Checkout = React.lazy( () => {
   return import('./containers/Checkout/Checkout')
@@ -23,10 +23,11 @@ const Auth = React.lazy( () => {
 //lazy loading chuck1,2,3 . only load when required
 
 const App = props => {
+    const {onTryAutoSignIn} = props; //it has to be outside, so that this will render at every cycle, then only we can check whether the dependencies changed
+
     useEffect(() => {
-      props.onTryAutoSignIn();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[]); //it should only run on the first render cycle
+      onTryAutoSignIn();
+    },[onTryAutoSignIn]);
 
     let route = (
       <Switch>
@@ -39,10 +40,10 @@ const App = props => {
     if(props.isAuthenticated){
       route = (
         <Switch>
-          <Route path="/checkout" render={(props) => <Checkout {...props}/>} />
-          <Route path="/orders" render={(props) => <Orders {...props}/>} />
+          <Route path="/checkout" render={(props) => <Checkout {...props} />} />
+          <Route path="/orders" render={(props) => <Orders {...props} />} />
           <Route path="/logout" component={Logout} />
-          <Route path="/auth" render={(props) => <Auth {...props}/>} />
+          <Route path="/auth" render={(props) => <Auth {...props} />} />
           <Route path="/" component={BurgerBuilder} />
           <Redirect to='/' />
         </Switch>
