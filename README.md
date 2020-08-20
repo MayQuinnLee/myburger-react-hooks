@@ -1,3 +1,8 @@
+Deployed at: https://burgerbuilder-react-hooks.netlify.app/
+
+This is a mini project built to learn React hooks, including forms api, authorisation, axios router, redux.
+This projects validates authorisation, add in orders, temporary saves orders using local storage.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
